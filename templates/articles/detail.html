@@ -1,0 +1,49 @@
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="main-content article-detail">
+        <article>
+            <h1>{{ article.title }}</h1>
+            {% if article.image_url %}
+            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-image-detail">
+            {% endif %}
+            <p>{{ article.content }}</p>
+            <div class="article-actions">
+                <button data-id="{{ article.id }}" class="btn-like">
+                    <i class="fas fa-heart"></i> <span class="count">{{ article.likes_count }}</span>
+                </button>
+                <button data-id="{{ article.id }}" class="btn-save">
+                    <i class="fas fa-bookmark"></i> <span class="count">{{ comments|length }}</span>
+                </button>
+            </div>
+            <section class="comments">
+                <h3>Commentaires ({{ comments|length }})</h3>
+                <ul>
+                    {% for comment in comments %}
+                    <li><strong>{{ comment.author_name }}</strong>: {{ comment.content }}</li>
+                    {% endfor %}
+                </ul>
+                {% if user %}
+                <form method="POST" action="/comment-article/{{ article.id }}" class="form-comment">
+                    <textarea name="content" rows="3" required></textarea>
+                    <button type="submit" class="btn btn-secondary">Commenter</button>
+                </form>
+                {% else %}
+                <p><a href="/login">Connectez-vous</a> pour commenter.</p>
+                {% endif %}
+            </section>
+        </article>
+    </main>
+    {% include "partials/footer.html" %}
+</body>
+
+</html>

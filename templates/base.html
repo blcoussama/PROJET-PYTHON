@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    {% include "partials/navbar.html" %}
+
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="/" class="logo">
+                    <i class="fas fa-blog"></i>
+                    BlogPlatform
+                </a>
+            </div>
+
+            <div class="nav-menu">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Accueil
+                </a>
+
+                {% if user %}
+                <a href="/create-article" class="nav-link">
+                    <i class="fas fa-plus"></i>
+                    Créer
+                </a>
+
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-btn">
+                        <i class="fas fa-user"></i>
+                        {{ user.username }}
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="/my-articles">
+                            <i class="fas fa-newspaper"></i>
+                            Mes articles
+                        </a>
+                        <a href="/liked-articles">
+                            <i class="fas fa-heart"></i>
+                            Articles aimés
+                        </a>
+                        <a href="/saved-articles">
+                            <i class="fas fa-bookmark"></i>
+                            Sauvegardés
+                        </a>
+                        <hr>
+                        <a href="/logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Déconnexion
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="nav-link">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Connexion
+                </a>
+                <a href="/register" class="nav-link btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Inscription
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        {% if error %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            {{ success }}
+        </div>
+        {% endif %}
+
+        <div class="content">
+            <!-- Le contenu spécifique à chaque page sera inséré ici -->
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 BlogPlatform. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+
+</html>

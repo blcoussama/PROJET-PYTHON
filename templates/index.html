@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="main-content">
+        {% if error %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Bienvenue sur BlogPlatform</h1>
+                <p>Découvrez, créez et partagez vos articles avec la communauté</p>
+                {% if not user %}
+                <div class="hero-actions">
+                    <a href="/register" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Créer un compte
+                    </a>
+                    <a href="/login" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Se connecter
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <section class="articles-section">
+            <div class="section-header">
+                <h2>Articles récents</h2>
+                {% if user %}
+                <a href="/create-article" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nouvel article
+                </a>
+                {% endif %}
+            </div>
+
+            {% if articles %}
+            <div class="articles-grid">
+                {% for article in articles %}
+                <article class="article-card">
+                    {% if article.image_url %}
+                    <div class="article-image">
+                        <img src="{{ article.image_url }}" alt="{{ article.title }}" loading="lazy">
+                    </div>
+                    {% endif %}
+
+                    <div class="article-content">
+                        <h3 class="article-title">
+                            <a href="/article/{{ article.id }}">{{ article.title }}</a>
+                        </h3>
+
+                        <div class="article-meta">
+                            <span class="article-author">
+                                <i class="fas fa-user"></i>
+                                {{ article.author_name }}
+                            </span>
+                            <span class="article-date">
+                                <i class="fas fa-calendar"></i>
+                                {{ format_date(article.created_at) }}
+                            </span>
+                        </div>
+
+                        <div class="article-excerpt">
+                            {{ truncate(article.content, 150) }}
+                        </div>
+
+                        <div class="article-stats">
+                            <span class="stat">
+                                <i class="fas fa-heart"></i>
+                                {{ article.likes_count }}
+                            </span>
+                            <span class="stat">
+                                <i class="fas fa-comment"></i>
+                                {{ article.comments_count }}
+                            </span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-newspaper"></i>
+                <h3>Aucun article pour le moment</h3>
+                <p>Soyez le premier à créer un article !</p>
+                {% if user %}
+                <a href="/create-article" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Créer le premier article
+                </a>
+                {% else %}
+                <a href="/register" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Créer un compte
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+
+    <script src="/static/js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,4 @@
+# requirements.txt
+
+# Aucun package tiers nécessaire : 
+# tous tes imports (http.server, sqlite3, hashlib, etc.) font partie de la stdlib de Python.

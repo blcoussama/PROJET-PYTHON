@@ -1,0 +1,37 @@
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="main-content">
+        <h2>Créer un article</h2>
+        <form method="POST" action="/create-article" class="form">
+            <div class="form-group">
+                <label for="title">Titre</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="image_url">URL de l'image (optionnel)</label>
+                <input type="text" id="image_url" name="image_url">
+            </div>
+            <div class="form-group">
+                <label for="content">Contenu</label>
+                <textarea id="content" name="content" rows="10" required></textarea>
+            </div>
+            {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">Publier</button>
+        </form>
+    </main>
+    {% include "partials/footer.html" %}
+</body>
+
+</html>
