@@ -1,68 +1,202 @@
+<!-- templates/partials/navbar.html -->
+<style>
+    /* ==== Styles de la navbar ==== */
+    .header {
+        background: #222;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 1024px;
+        margin: 0 auto;
+        padding: .75rem 1rem;
+    }
+
+    .logo {
+        color: #fff;
+        text-decoration: none;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .logo i {
+        margin-right: .5rem;
+    }
+
+    .nav-menu {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-link {
+        color: #ddd;
+        text-decoration: none;
+        margin-left: 1rem;
+        display: flex;
+        align-items: center;
+        transition: color .2s;
+    }
+
+    .nav-link i {
+        margin-right: .4rem;
+    }
+
+    .nav-link:hover {
+        color: #fff;
+    }
+
+    .nav-link.btn-primary {
+        background: #007bff;
+        color: #fff;
+        padding: .4rem .8rem;
+        border-radius: 4px;
+    }
+
+    .nav-dropdown {
+        position: relative;
+        margin-left: 1rem;
+    }
+
+    .nav-dropdown-btn {
+        background: none;
+        border: none;
+        color: #ddd;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        font-size: .95rem;
+    }
+
+    .nav-dropdown-btn i:last-child {
+        margin-left: .3rem;
+    }
+
+    .nav-dropdown-content {
+        display: none;
+        position: absolute;
+        top: 2.5rem;
+        right: 0;
+        background: #fff;
+        min-width: 180px;
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+    }
+
+    .nav-dropdown.open .nav-dropdown-content {
+        display: block;
+    }
+
+    .nav-dropdown-content a {
+        display: flex;
+        align-items: center;
+        padding: .6rem 1rem;
+        color: #333;
+        text-decoration: none;
+    }
+
+    .nav-dropdown-content a i {
+        margin-right: .5rem;
+    }
+
+    .nav-dropdown-content a:hover {
+        background: #f0f0f0;
+    }
+
+    .nav-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+    }
+
+    .nav-toggle span {
+        width: 22px;
+        height: 3px;
+        background: #fff;
+        margin-bottom: 3px;
+        border-radius: 2px;
+    }
+
+    @media(max-width:768px) {
+        .nav-toggle {
+            display: flex;
+        }
+
+        .nav-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #222;
+            flex-direction: column;
+            padding: 1rem 0;
+        }
+
+        .nav-menu.active {
+            display: flex;
+        }
+
+        .nav-link {
+            margin: .5rem 1rem;
+        }
+
+        .nav-dropdown-content {
+            position: static;
+            box-shadow: none;
+            background: none;
+        }
+    }
+</style>
+
 <header class="header">
-    <link rel="stylesheet" href="/static/css/navbar.css">
     <nav class="navbar">
-        <div class="nav-brand">
-            <a href="/" class="logo">
-                <i class="fas fa-blog"></i>
-                BlogPlatform
-            </a>
-        </div>
-
+        <a href="/" class="logo"><i class="fas fa-blog"></i>BlogPlatform</a>
         <div class="nav-menu" id="navMenu">
-            <a href="/" class="nav-link">
-                <i class="fas fa-home"></i>
-                Accueil
-            </a>
-
+            <a href="/" class="nav-link"><i class="fas fa-home"></i>Accueil</a>
             {% if user %}
-            <a href="/create-article" class="nav-link">
-                <i class="fas fa-plus"></i>
-                Créer
-            </a>
-
-            <div class="nav-dropdown">
+            <a href="/create-article" class="nav-link"><i class="fas fa-plus"></i>Créer</a>
+            <div class="nav-dropdown" id="userDropdown">
                 <button class="nav-dropdown-btn">
-                    <i class="fas fa-user"></i>
-                    {{ user.username }}
-                    <i class="fas fa-chevron-down"></i>
+                    <i class="fas fa-user"></i>{{ user.username }} <i class="fas fa-chevron-down"></i>
                 </button>
                 <div class="nav-dropdown-content">
-                    <a href="/my-articles">
-                        <i class="fas fa-newspaper"></i>
-                        Mes articles
-                    </a>
-                    <a href="/liked-articles">
-                        <i class="fas fa-heart"></i>
-                        Articles aimés
-                    </a>
-                    <a href="/saved-articles">
-                        <i class="fas fa-bookmark"></i>
-                        Sauvegardés
-                    </a>
+                    <a href="/my-articles"><i class="fas fa-newspaper"></i>Mes articles</a>
+                    <a href="/liked-articles"><i class="fas fa-heart"></i>Articles aimés</a>
+                    <a href="/saved-articles"><i class="fas fa-bookmark"></i>Sauvegardés</a>
                     <hr>
-                    <a href="/logout">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Déconnexion
-                    </a>
+                    <a href="/logout"><i class="fas fa-sign-out-alt"></i>Déconnexion</a>
                 </div>
             </div>
             {% else %}
-            <a href="/login" class="nav-link">
-                <i class="fas fa-sign-in-alt"></i>
-                Connexion
-            </a>
-            <a href="/register" class="nav-link btn-primary">
-                <i class="fas fa-user-plus"></i>
-                Inscription
-            </a>
+            <a href="/login" class="nav-link"><i class="fas fa-sign-in-alt"></i>Connexion</a>
+            <a href="/register" class="nav-link btn-primary"><i class="fas fa-user-plus"></i>Inscription</a>
             {% endif %}
         </div>
-
-        <div class="nav-toggle" id="navToggle">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
+        <div class="nav-toggle" id="navToggle"><span></span><span></span><span></span></div>
     </nav>
 </header>
 
+<script>
+    // Basculer le menu mobile
+    document.getElementById("navToggle").addEventListener("click", () => {
+        document.getElementById("navMenu").classList.toggle("active");
+    });
+
+    // Gérer l’ouverture/fermeture du dropdown utilisateur
+    const userDropdown = document.getElementById("userDropdown");
+    if (userDropdown) {
+        userDropdown.querySelector(".nav-dropdown-btn").addEventListener("click", e => {
+            e.stopPropagation();
+            userDropdown.classList.toggle("open");
+        });
+        document.addEventListener("click", () => {
+            userDropdown.classList.remove("open");
+        });
+    }
+</script>
+  
