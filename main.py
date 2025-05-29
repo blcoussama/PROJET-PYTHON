@@ -8,12 +8,54 @@ from handlers.auth_handler import AuthHandler
 from handlers.article_handler import ArticleHandler
 from handlers.user_handler import UserHandler
 from utils.session_manager import SessionManager
+from datetime import datetime
 
 app = Flask(
     __name__,
     static_folder="static",      # serves /static/*
     template_folder="templates"  # your templates directory
 )
+
+# ── Template Filters ─────────────────────────────────────────────────
+@app.template_filter('format_date')
+def format_date_filter(date_value):
+    """Format date for display in templates"""
+    if isinstance(date_value, str):
+        # If it's a string, try to parse it
+        try:
+            date_value = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
+        except ValueError:
+            try:
+                # Try different common formats
+                date_value = datetime.strptime(date_value, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return date_value  # Return as-is if can't parse
+    
+    if isinstance(date_value, datetime):
+        return date_value.strftime('%d %B %Y à %H:%M')
+    
+    return str(date_value)  # Fallback to string representation
+
+@app.template_filter('truncate')
+def truncate_filter(text, length=100):
+    """Truncate text to specified length and add ellipsis if needed"""
+    if not text:
+        return ""
+    
+    text = str(text)
+    if len(text) <= length:
+        return text
+    
+    return text[:length].rstrip() + "..."
+
+# Alternative: you can also add them as global functions
+# @app.template_global()
+# def format_date(date_value):
+#     return format_date_filter(date_value)
+# 
+# @app.template_global()
+# def truncate(text, length=100):
+#     return truncate_filter(text, length)
 
 # ── Initialization ───────────────────────────────────────────────────
 db = Database()

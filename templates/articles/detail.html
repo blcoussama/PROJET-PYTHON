@@ -1,259 +1,166 @@
-<html lang="fr">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-
-<body>
-    {% include "partials/navbar.html" %}
-    <main class="main-content article-detail">
-        <article>
-            <h1>{{ article.title }}</h1>
-            {% if article.image_url %}
-            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-image-detail">
-            {% endif %}
-            <p>{{ article.content }}</p>
-            <div class="article-actions">
-                {% if user %}
-                <button data-id="{{ article.id }}" class="btn-like {{ 'liked' if is_liked else '' }}">
-                    <i class="fas fa-heart"></i> <span class="count">{{ article.likes_count }}</span>
-                </button>
-                <button data-id="{{ article.id }}" class="btn-save {{ 'saved' if is_saved else '' }}">
-                    <i class="fas fa-bookmark"></i>
-                </button>
-                {% else %}
-                <button class="btn-like" disabled title="Connectez-vous pour aimer">
-                    <i class="fas fa-heart"></i> <span class="count">{{ article.likes_count }}</span>
-                </button>
-                <button class="btn-save" disabled title="Connectez-vous pour sauvegarder">
-                    <i class="fas fa-bookmark"></i>
-                </button>
-                {% endif %}
+{% block content %}
+<article
+    style="background:#fff; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1); overflow:hidden; margin-bottom:2rem;">
+    {% if article.image_url %}
+    <img src="{{ article.image_url }}" alt="{{ article.title }}"
+        style="width:100%; height:300px; object-fit:cover; display:block;">
+    {% endif %}
+    <div style="padding:1.5rem;">
+        <header style="margin-bottom:1rem;">
+            <h1 style="margin-bottom:.5rem; color:#333;">{{ article.title }}</h1>
+            <div style="color:#666; font-size:.9rem;">
+                <i class="fas fa-user"></i> {{ article.author_name }}
+                &nbsp;|&nbsp;
+                <i class="fas fa-calendar"></i> {{ article.created_at|format_date }}
             </div>
-            <section class="comments">
-                <h3>Commentaires ({{ comments|length }})</h3>
-                <ul id="comments-list">
-                    {% for comment in comments %}
-                    <li><strong>{{ comment.author_name }}</strong>: {{ comment.content }}</li>
-                    {% endfor %}
-                </ul>
+        </header>
+        <div style="line-height:1.6; margin-bottom:1.5rem; white-space:pre-wrap;">
+            {{ article.content }}
+        </div>
+        <footer style="display:flex; justify-content:space-between; align-items:center;
+                   padding-top:1rem; border-top:1px solid #eee;">
+            <div style="display:flex; gap:1rem;">
                 {% if user %}
-                <form method="POST" action="/comment-article/{{ article.id }}" class="form-comment" id="comment-form">
-                    <textarea name="content" rows="3" required></textarea>
-                    <button type="submit" class="btn btn-secondary">Commenter</button>
-                </form>
+                <button onclick="toggleLike({{ article.id }})" id="like-btn" style="background:none; border:none;
+                         color:{% if is_liked %}#e74c3c{% else %}#666{% endif %};
+                         cursor:pointer; font-size:1rem;">
+                    <i class="fas fa-heart"></i> <span id="likes-count">{{ article.likes_count }}</span>
+                </button>
+                <button onclick="toggleSave({{ article.id }})" id="save-btn" style="background:none; border:none;
+                         color:{% if is_saved %}#f39c12{% else %}#666{% endif %};
+                         cursor:pointer; font-size:1rem;">
+                    <i class="fas fa-bookmark"></i>
+                    <span id="save-text">{% if is_saved %}Sauvegardé{% else %}Sauvegarder{% endif %}</span>
+                </button>
                 {% else %}
-                <p><a href="/login">Connectez-vous</a> pour commenter.</p>
+                <span style="color:#666;"><i class="fas fa-heart"></i> {{ article.likes_count }}</span>
                 {% endif %}
-            </section>
-        </article>
-    </main>
-    {% include "partials/footer.html" %}
+                <span style="color:#666;"><i class="fas fa-comment"></i> {{ comments|length }}</span>
+            </div>
+            {% if user and article.author_id == user.id %}
+            <div style="display:flex; gap:.5rem;">
+                <a href="/edit-article/{{ article.id }}" style="background:#007bff; color:#fff; padding:.4rem .8rem;
+                  border-radius:4px; text-decoration:none; font-size:.9rem;">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <button onclick="deleteArticle({{ article.id }})" style="background:#dc3545; color:#fff; padding:.4rem .8rem;
+                       border:none; border-radius:4px; cursor:pointer; font-size:.9rem;">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+            {% endif %}
+        </footer>
+    </div>
+</article>
 
-    <script>
-        // Like functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            const likeBtn = document.querySelector('.btn-like');
-            const saveBtn = document.querySelector('.btn-save');
-            const commentForm = document.getElementById('comment-form');
+<section style="background:#fff; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1); padding:1.5rem;">
+    <h3 style="margin-bottom:1rem;">Commentaires ({{ comments|length }})</h3>
 
-            // Handle like button
-            if (likeBtn && !likeBtn.disabled) {
-                likeBtn.addEventListener('click', async function () {
-                    const articleId = this.dataset.id;
-                    try {
-                        const response = await fetch(`/like-article/${articleId}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            }
-                        });
+    {% if user %}
+    <form onsubmit="addComment(event, {{ article.id }})" style="margin-bottom:1.5rem;">
+        <div style="display:flex; gap:.5rem;">
+            <textarea name="content" placeholder="Ajoutez un commentaire..." required style="flex:1; padding:.6rem; border:1px solid #ccc; border-radius:4px;
+                       resize:vertical; min-height:80px;"></textarea>
+            <button type="submit" style="background:#007bff; color:#fff; border:none;
+                     border-radius:4px; padding:.6rem 1rem; cursor:pointer;">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </form>
+    {% endif %}
 
-                        const result = await response.json();
+    <div id="comments-list">
+        {% for comment in comments %}
+        <div style="border-bottom:1px solid #eee; padding:1rem 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
+                <strong>{{ comment.author_name }}</strong>
+                <small style="color:#666;">{{ comment.created_at|format_date }}</small>
+            </div>
+            <p style="line-height:1.5;">{{ comment.content }}</p>
+        </div>
+        {% endfor %}
+    </div>
 
-                        if (result.success) {
-                            // Update like count
-                            const countSpan = this.querySelector('.count');
-                            countSpan.textContent = result.likes_count;
+    {% if comments|length == 0 %}
+    <p style="text-align:center; color:#666;">Aucun commentaire pour le moment.</p>
+    {% endif %}
+</section>
 
-                            // Toggle liked state
-                            if (result.liked) {
-                                this.classList.add('liked');
-                            } else {
-                                this.classList.remove('liked');
-                            }
-                        } else {
-                            alert('Erreur: ' + result.error);
-                        }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        alert('Une erreur est survenue');
-                    }
-                });
+
+<!-- page‐specific CSS must live inside a <style> tag -->
+<style>
+    /* if you had any additional CSS, put it in here */
+</style>
+
+<!-- page‐specific JS must live inside a <script> tag -->
+<script>
+    function toggleLike(articleId) {
+        fetch('/like-article/' + articleId, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const btn = document.getElementById('like-btn');
+                    document.getElementById('likes-count').textContent = data.likes_count;
+                    btn.style.color = data.liked ? '#e74c3c' : '#666';
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            });
+    }
+
+    function toggleSave(articleId) {
+        fetch('/save-article/' + articleId, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const btn = document.getElementById('save-btn');
+                    const txt = document.getElementById('save-text');
+                    btn.style.color = data.saved ? '#f39c12' : '#666';
+                    txt.textContent = data.saved ? 'Sauvegardé' : 'Sauvegarder';
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            });
+    }
+
+    function deleteArticle(articleId) {
+        if (!confirm('Êtes-vous sûr ?')) return;
+        fetch('/delete-article/' + articleId, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) window.location.href = '/';
+                else alert('Erreur: ' + data.error);
+            });
+    }
+
+    function addComment(event, articleId) {
+        event.preventDefault();
+        const form = event.target;
+        const content = form.content.value.trim();
+        if (!content) return alert('Veuillez saisir un commentaire');
+
+        // build x-www-form-urlencoded body
+        const body = new URLSearchParams({ content });
+
+        fetch('/comment-article/' + articleId, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: body.toString()
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+            // update the comments list in-place instead of reload if you want…
+            location.reload();
+            } else {
+            alert(data.error);
             }
-
-            // Handle save button
-            if (saveBtn && !saveBtn.disabled) {
-                saveBtn.addEventListener('click', async function () {
-                    const articleId = this.dataset.id;
-                    try {
-                        const response = await fetch(`/save-article/${articleId}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            // Toggle saved state
-                            if (result.saved) {
-                                this.classList.add('saved');
-                            } else {
-                                this.classList.remove('saved');
-                            }
-                        } else {
-                            alert('Erreur: ' + result.error);
-                        }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        alert('Une erreur est survenue');
-                    }
-                });
-            }
-
-            // Handle comment form
-            if (commentForm) {
-                commentForm.addEventListener('submit', async function (e) {
-                    e.preventDefault();
-
-                    const formData = new FormData(this);
-                    const content = formData.get('content');
-
-                    if (!content.trim()) {
-                        alert('Le commentaire ne peut pas être vide');
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: new URLSearchParams(formData)
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            // Clear form
-                            this.reset();
-
-                            // Update comments list
-                            const commentsList = document.getElementById('comments-list');
-                            const commentsHeader = document.querySelector('.comments h3');
-
-                            // Update comments count in header
-                            commentsHeader.textContent = `Commentaires (${result.comments_count})`;
-
-                            // Rebuild comments list
-                            commentsList.innerHTML = '';
-                            result.comments.forEach(comment => {
-                                const li = document.createElement('li');
-                                li.innerHTML = `<strong>${comment.author_name}</strong>: ${comment.content}`;
-                                commentsList.appendChild(li);
-                            });
-                        } else {
-                            alert('Erreur: ' + result.error);
-                        }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        alert('Une erreur est survenue');
-                    }
-                });
-            }
-        });
-    </script>
-
-    <style>
-        .btn-like,
-        .btn-save {
-            background: none;
-            border: 1px solid #ddd;
-            padding: 8px 12px;
-            margin-right: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-like:hover,
-        .btn-save:hover {
-            background-color: #f5f5f5;
-        }
-
-        .btn-like.liked {
-            background-color: #ff6b6b;
-            color: white;
-            border-color: #ff6b6b;
-        }
-
-        .btn-save.saved {
-            background-color: #4ecdc4;
-            color: white;
-            border-color: #4ecdc4;
-        }
-
-        .btn-like:disabled,
-        .btn-save:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .article-actions {
-            margin: 20px 0;
-            padding: 15px 0;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
-        }
-
-        .form-comment {
-            margin-top: 20px;
-        }
-
-        .form-comment textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .form-comment button {
-            margin-top: 10px;
-        }
-
-        .comments ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .comments li {
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .comments li:last-child {
-            border-bottom: none;
-        }
-    </style>
-</body>
-
-</html>
+        })
+        .catch(() => alert('Erreur de connexion'));
+    }
+</script>
+{% endblock %}

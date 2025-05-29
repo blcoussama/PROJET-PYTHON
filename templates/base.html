@@ -27,7 +27,7 @@
         .main-content {
             max-width: 1024px;
             margin: 2rem auto;
-            padding: 0 1rem
+            padding: 0 1rem;
         }
 
         .alert {
@@ -69,16 +69,12 @@
             color: #fff
         }
     </style>
-
-    <!-- Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
 
-    <!-- === Navbar incluse avec son propre CSS/JS === -->
     {% include "partials/navbar.html" %}
-
 
     <main class="main-content">
         {% if error %}
@@ -92,14 +88,10 @@
         </div>
         {% endif %}
 
-        <!-- Contenu spécifique à chaque page -->
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="footer">
-        <p>&copy; 2025 BlogPlatform. Tous droits réservés.</p>
-    </footer>
-
+    {% include "partials/footer.html" %}
 </body>
 
 </html>

@@ -1,40 +1,154 @@
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        /* Reset & Base */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        /* Main content wrapper */
+        .main-content {
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Form */
+        .form {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form h2 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Button */
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background-color: #fddede;
+            color: #c0392b;
+            border-left: 4px solid #c0392b;
+        }
+
+        /* Footer */
+        .footer {
+            background: #222;
+            color: #aaa;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer a {
+            color: #aaa;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #fff;
+        }
+    </style>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
-    <!-- Pas de navbar pour les pages d'auth -->
+
     <main class="main-content">
-        <h2>Inscription</h2>
         <form method="POST" action="/register" class="form">
+            <h2>Inscription</h2>
+
             <div class="form-group">
                 <label for="username">Nom d'utilisateur</label>
                 <input type="text" id="username" name="username" required>
             </div>
+
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required>
             </div>
+
             <div class="form-group">
                 <label for="password">Mot de passe</label>
                 <input type="password" id="password" name="password" required>
             </div>
+
             <div class="form-group">
                 <label for="confirm_password">Confirmer le mot de passe</label>
                 <input type="password" id="confirm_password" name="confirm_password" required>
             </div>
+
             {% if error %}
-            <div class="alert alert-error">{{ error }}</div>
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-triangle"></i> {{ error }}
+            </div>
             {% endif %}
+
             <button type="submit" class="btn btn-primary">Créer un compte</button>
         </form>
     </main>
+
     {% include "partials/footer.html" %}
 </body>
 

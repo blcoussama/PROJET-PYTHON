@@ -1,167 +1,79 @@
-<!DOCTYPE html>
-<html lang="fr">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+{% block content %}
+<h2>Articles aimés</h2>
 
-<body>
-    {% include "partials/navbar.html" %}
-    <main class="main-content">
-        <h2>Articles aimés</h2>
-        {% if articles %}
-        <div class="article-list">
-            {% for article in articles %}
-            <div class="article-card">
-                <h3><a href="/article/{{ article.id }}">{{ article.title }}</a></h3>
-                {% if article.image_url %}
-                <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-image">
-                {% endif %}
-                <p>{{ article.content[:150] }}{% if article.content|length > 150 %}...{% endif %}</p>
-                <div class="article-meta">
-                    <span class="author">Par {{ article.author_name }}</span>
-                    <span class="stats">
-                        <i class="fas fa-heart"></i> {{ article.likes_count }}
-                        <i class="fas fa-comment"></i> {{ article.comments_count }}
-                    </span>
-                </div>
-                <div class="article-actions">
-                    <a href="/article/{{ article.id }}" class="btn btn-primary">Lire l'article</a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-heart fa-3x"></i>
-            <h3>Aucun article aimé</h3>
-            <p>Vous n'avez aimé aucun article pour le moment.</p>
-            <a href="/" class="btn btn-primary">Découvrir des articles</a>
-        </div>
+{% if articles %}
+<div class="article-list">
+    {% for a in articles %}
+    <div class="article-card">
+        <h3 style="margin:0 0.5rem 0.5rem;">
+            <a href="/article/{{ a.id }}" style="color:#007bff; text-decoration:none;">
+                {{ a.title }}
+            </a>
+        </h3>
+
+        {% if a.image_url %}
+        <img src="{{ a.image_url }}" alt="{{ a.title }}"
+            style="width:100%; height:200px; object-fit:cover; border-radius:4px;" />
         {% endif %}
-    </main>
-    {% include "partials/footer.html" %}
 
-    <style>
-        .article-list {
-            display: grid;
-            gap: 20px;
-            margin-top: 20px;
-        }
+        <p style="margin:0.5rem 0; color:#666;">
+            {{ a.content|truncate(150) }}
+        </p>
 
-        .article-card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+        <div style="font-size:.85rem; color:#888; margin-bottom:1rem;">
+            <i class="fas fa-user"></i> {{ a.author_name }}
+            &nbsp; • &nbsp;
+            <i class="fas fa-calendar"></i> {{ a.created_at|format_date }}
+            &nbsp; • &nbsp;
+            <i class="fas fa-heart"></i> {{ a.likes_count }}
+            <i class="fas fa-comment" style="margin-left:1rem;"></i> {{ a.comments_count }}
+        </div>
 
-        .article-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
+        <a href="/article/{{ a.id }}" class="btn btn-primary" style="text-decoration:none;">
+            Lire l'article
+        </a>
+    </div>
+    {% endfor %}
+</div>
 
-        .article-card h3 {
-            margin: 0 0 10px 0;
-        }
+<style>
+    .article-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
 
-        .article-card h3 a {
-            text-decoration: none;
-            color: #333;
-            font-size: 1.2em;
-        }
+    .article-card {
+        background: #fff;
+        border-radius: 6px;
+        padding: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .article-card h3 a:hover {
-            color: #007bff;
-        }
+    .btn-primary {
+        display: inline-block;
+        background: #007bff;
+        color: #fff;
+        padding: .5rem 1rem;
+        border-radius: 4px;
+    }
 
-        .article-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+</style>
+{% else %}
+<div class="empty-state" style="text-align:center; padding:3rem 1rem; color:#666;">
+    <i class="fas fa-heart fa-3x" style="margin-bottom:1rem;"></i>
+    <h3>Aucun article aimé</h3>
+    <p>Vous n'avez aimé aucun article pour le moment.</p>
+    <a href="/" class="btn btn-primary" style="text-decoration:none;">
+        Découvrir des articles
+    </a>
+</div>
+{% endif %}
 
-        .article-card p {
-            color: #666;
-            line-height: 1.6;
-            margin: 10px 0;
-        }
-
-        .article-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0;
-            font-size: 0.9em;
-            color: #888;
-        }
-
-        .article-meta .stats {
-            display: flex;
-            gap: 15px;
-        }
-
-        .article-meta .stats i {
-            margin-right: 5px;
-        }
-
-        .article-actions {
-            margin-top: 15px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.9em;
-            transition: background-color 0.2s ease;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #888;
-        }
-
-        .empty-state i {
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            margin-bottom: 10px;
-            color: #666;
-        }
-
-        .empty-state p {
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .article-meta {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-        }
-    </style>
-</body>
-
-</html>
+{% endblock %}
