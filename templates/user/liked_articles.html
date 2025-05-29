@@ -7,36 +7,37 @@
 <div class="article-list">
     {% for a in articles %}
     <div class="article-card">
-        <h3 style="margin:0 0.5rem 0.5rem;">
-            <a href="/article/{{ a.id }}" style="color:#007bff; text-decoration:none;">
-                {{ a.title }}
-            </a>
+        <h3>
+            <a href="/article/{{ a.id }}">{{ a.title }}</a>
         </h3>
 
         {% if a.image_url %}
-        <img src="{{ a.image_url }}" alt="{{ a.title }}"
-            style="width:100%; height:200px; object-fit:cover; border-radius:4px;" />
+        <img src="{{ a.image_url }}" alt="{{ a.title }}" class="article-image" />
         {% endif %}
 
-        <p style="margin:0.5rem 0; color:#666;">
-            {{ a.content|truncate(150) }}
-        </p>
+        <p>{{ a.content|truncate(150) }}</p>
 
-        <div style="font-size:.85rem; color:#888; margin-bottom:1rem;">
-            <i class="fas fa-user"></i> {{ a.author_name }}
-            &nbsp; • &nbsp;
-            <i class="fas fa-calendar"></i> {{ a.created_at|format_date }}
-            &nbsp; • &nbsp;
-            <i class="fas fa-heart"></i> {{ a.likes_count }}
-            <i class="fas fa-comment" style="margin-left:1rem;"></i> {{ a.comments_count }}
+        <div class="article-meta">
+            <span><i class="fas fa-user"></i> {{ a.author_name }}</span>
+            <span><i class="fas fa-calendar"></i> {{ a.created_at|format_date }}</span>
+            <span><i class="fas fa-heart"></i> {{ a.likes_count }}</span>
+            <span><i class="fas fa-comment"></i> {{ a.comments_count }}</span>
         </div>
 
-        <a href="/article/{{ a.id }}" class="btn btn-primary" style="text-decoration:none;">
-            Lire l'article
-        </a>
+        <div class="article-actions">
+            <a href="/article/{{ a.id }}" class="btn btn-primary">Voir</a>
+        </div>
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-heart fa-3x"></i>
+    <h3>Aucun article aimé</h3>
+    <p class="empty-desc">Vous n'avez aimé aucun article pour le moment.</p>
+    <a href="/" class="btn btn-primary">Découvrir des articles</a>
+</div>
+{% endif %}
 
 <style>
     .article-list {
@@ -51,29 +52,84 @@
         border-radius: 6px;
         padding: 1rem;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .article-card h3 {
+        margin-bottom: .5rem;
+    }
+
+    .article-card h3 a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .article-card h3 a:hover {
+        text-decoration: underline;
+    }
+
+    .article-image {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: .75rem;
+    }
+
+    .article-card p {
+        flex: 1;
+        color: #666;
+        margin-bottom: .75rem;
+    }
+
+    .article-meta {
+        font-size: .85rem;
+        color: #888;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+        margin-bottom: .75rem;
+    }
+
+    .article-actions {
+        text-align: right;
     }
 
     .btn-primary {
         display: inline-block;
+        padding: .5rem 1rem;
         background: #007bff;
         color: #fff;
-        padding: .5rem 1rem;
+        border: none;
         border-radius: 4px;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: .9rem;
     }
 
     .btn-primary:hover {
         background: #0056b3;
     }
-</style>
-{% else %}
-<div class="empty-state" style="text-align:center; padding:3rem 1rem; color:#666;">
-    <i class="fas fa-heart fa-3x" style="margin-bottom:1rem;"></i>
-    <h3>Aucun article aimé</h3>
-    <p>Vous n'avez aimé aucun article pour le moment.</p>
-    <a href="/" class="btn btn-primary" style="text-decoration:none;">
-        Découvrir des articles
-    </a>
-</div>
-{% endif %}
 
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #666;
+    }
+
+    .empty-state i {
+        margin-bottom: 1rem;
+        color: #ddd;
+    }
+
+    .empty-state a.btn-primary {
+        margin-top: 1rem;
+    }
+
+    .empty-desc {
+        margin-top: 10px;
+    }
+</style>
 {% endblock %}

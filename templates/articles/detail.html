@@ -126,7 +126,7 @@
     }
 
     function deleteArticle(articleId) {
-        if (!confirm('Êtes-vous sûr ?')) return;
+        if (!confirm('Êtes-vous sûr de Supprimer cet Article ?')) return;
         fetch('/delete-article/' + articleId, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
