@@ -18,22 +18,31 @@
             {% endif %}
             <p>{{ article.content }}</p>
             <div class="article-actions">
-                <button data-id="{{ article.id }}" class="btn-like">
+                {% if user %}
+                <button data-id="{{ article.id }}" class="btn-like {{ 'liked' if is_liked else '' }}">
                     <i class="fas fa-heart"></i> <span class="count">{{ article.likes_count }}</span>
                 </button>
-                <button data-id="{{ article.id }}" class="btn-save">
-                    <i class="fas fa-bookmark"></i> <span class="count">{{ comments|length }}</span>
+                <button data-id="{{ article.id }}" class="btn-save {{ 'saved' if is_saved else '' }}">
+                    <i class="fas fa-bookmark"></i>
                 </button>
+                {% else %}
+                <button class="btn-like" disabled title="Connectez-vous pour aimer">
+                    <i class="fas fa-heart"></i> <span class="count">{{ article.likes_count }}</span>
+                </button>
+                <button class="btn-save" disabled title="Connectez-vous pour sauvegarder">
+                    <i class="fas fa-bookmark"></i>
+                </button>
+                {% endif %}
             </div>
             <section class="comments">
                 <h3>Commentaires ({{ comments|length }})</h3>
-                <ul>
+                <ul id="comments-list">
                     {% for comment in comments %}
                     <li><strong>{{ comment.author_name }}</strong>: {{ comment.content }}</li>
                     {% endfor %}
                 </ul>
                 {% if user %}
-                <form method="POST" action="/comment-article/{{ article.id }}" class="form-comment">
+                <form method="POST" action="/comment-article/{{ article.id }}" class="form-comment" id="comment-form">
                     <textarea name="content" rows="3" required></textarea>
                     <button type="submit" class="btn btn-secondary">Commenter</button>
                 </form>
@@ -44,6 +53,207 @@
         </article>
     </main>
     {% include "partials/footer.html" %}
+
+    <script>
+        // Like functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const likeBtn = document.querySelector('.btn-like');
+            const saveBtn = document.querySelector('.btn-save');
+            const commentForm = document.getElementById('comment-form');
+
+            // Handle like button
+            if (likeBtn && !likeBtn.disabled) {
+                likeBtn.addEventListener('click', async function () {
+                    const articleId = this.dataset.id;
+                    try {
+                        const response = await fetch(`/like-article/${articleId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Update like count
+                            const countSpan = this.querySelector('.count');
+                            countSpan.textContent = result.likes_count;
+
+                            // Toggle liked state
+                            if (result.liked) {
+                                this.classList.add('liked');
+                            } else {
+                                this.classList.remove('liked');
+                            }
+                        } else {
+                            alert('Erreur: ' + result.error);
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue');
+                    }
+                });
+            }
+
+            // Handle save button
+            if (saveBtn && !saveBtn.disabled) {
+                saveBtn.addEventListener('click', async function () {
+                    const articleId = this.dataset.id;
+                    try {
+                        const response = await fetch(`/save-article/${articleId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Toggle saved state
+                            if (result.saved) {
+                                this.classList.add('saved');
+                            } else {
+                                this.classList.remove('saved');
+                            }
+                        } else {
+                            alert('Erreur: ' + result.error);
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue');
+                    }
+                });
+            }
+
+            // Handle comment form
+            if (commentForm) {
+                commentForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const content = formData.get('content');
+
+                    if (!content.trim()) {
+                        alert('Le commentaire ne peut pas être vide');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams(formData)
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Clear form
+                            this.reset();
+
+                            // Update comments list
+                            const commentsList = document.getElementById('comments-list');
+                            const commentsHeader = document.querySelector('.comments h3');
+
+                            // Update comments count in header
+                            commentsHeader.textContent = `Commentaires (${result.comments_count})`;
+
+                            // Rebuild comments list
+                            commentsList.innerHTML = '';
+                            result.comments.forEach(comment => {
+                                const li = document.createElement('li');
+                                li.innerHTML = `<strong>${comment.author_name}</strong>: ${comment.content}`;
+                                commentsList.appendChild(li);
+                            });
+                        } else {
+                            alert('Erreur: ' + result.error);
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue');
+                    }
+                });
+            }
+        });
+    </script>
+
+    <style>
+        .btn-like,
+        .btn-save {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-like:hover,
+        .btn-save:hover {
+            background-color: #f5f5f5;
+        }
+
+        .btn-like.liked {
+            background-color: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .btn-save.saved {
+            background-color: #4ecdc4;
+            color: white;
+            border-color: #4ecdc4;
+        }
+
+        .btn-like:disabled,
+        .btn-save:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .article-actions {
+            margin: 20px 0;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-comment {
+            margin-top: 20px;
+        }
+
+        .form-comment textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-comment button {
+            margin-top: 10px;
+        }
+
+        .comments ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .comments li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .comments li:last-child {
+            border-bottom: none;
+        }
+    </style>
 </body>
 
 </html>
