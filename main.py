@@ -1,4 +1,3 @@
-# main.py
 from flask import (
     Flask, render_template, request, redirect,
     url_for, make_response, jsonify, abort
@@ -12,33 +11,32 @@ from datetime import datetime
 
 app = Flask(
     __name__,
-    static_folder="static",      # serves /static/*
-    template_folder="templates"  # your templates directory
+    template_folder="templates"  # répertoire des templates
 )
 
-# ── Template Filters ─────────────────────────────────────────────────
+# ── Filtres de Template ─────────────────────────────────────────────
 @app.template_filter('format_date')
 def format_date_filter(date_value):
-    """Format date for display in templates"""
+    """Formate la date pour l'affichage dans les templates"""
     if isinstance(date_value, str):
-        # If it's a string, try to parse it
+        # Si c'est une chaîne, essayer de l'analyser
         try:
             date_value = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
         except ValueError:
             try:
-                # Try different common formats
+                # Essayer différents formats courants
                 date_value = datetime.strptime(date_value, '%Y-%m-%d %H:%M:%S')
             except ValueError:
-                return date_value  # Return as-is if can't parse
+                return date_value  # Retourner tel quel si impossible à analyser
     
     if isinstance(date_value, datetime):
         return date_value.strftime('%d %B %Y à %H:%M')
     
-    return str(date_value)  # Fallback to string representation
+    return str(date_value)  # Solution de secours vers représentation string
 
 @app.template_filter('truncate')
 def truncate_filter(text, length=100):
-    """Truncate text to specified length and add ellipsis if needed"""
+    """Tronque le texte à la longueur spécifiée et ajoute des points de suspension si nécessaire"""
     if not text:
         return ""
     
@@ -48,7 +46,7 @@ def truncate_filter(text, length=100):
     
     return text[:length].rstrip() + "..."
 
-# Alternative: you can also add them as global functions
+# Alternative: on peut aussi les ajouter comme fonctions globales
 # @app.template_global()
 # def format_date(date_value):
 #     return format_date_filter(date_value)
@@ -57,7 +55,7 @@ def truncate_filter(text, length=100):
 # def truncate(text, length=100):
 #     return truncate_filter(text, length)
 
-# ── Initialization ───────────────────────────────────────────────────
+# ── Initialisation ──────────────────────────────────────────────────
 db = Database()
 db.init_database()
 
@@ -67,7 +65,7 @@ article_h = ArticleHandler(db, session_mgr)
 user_h = UserHandler(db, session_mgr)
 
 
-# ── Helpers ──────────────────────────────────────────────────────────
+# ── Fonctions d'aide ────────────────────────────────────────────────
 def get_current_user():
     sid = request.cookies.get("session_id")
     return session_mgr.get_user(sid) if sid else None
@@ -76,7 +74,7 @@ def set_session_cookie(resp, session_id):
     resp.set_cookie("session_id", session_id, httponly=True, path="/")
 
 
-# ── Routes ───────────────────────────────────────────────────────────
+# ── Routes ──────────────────────────────────────────────────────────
 @app.route("/")
 def home():
     user = get_current_user()
@@ -291,6 +289,6 @@ def saved_articles():
     )
 
 
-# ── Run ───────────────────────────────────────────────────────────────
+# ── Exécution ───────────────────────────────────────────────────────
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
