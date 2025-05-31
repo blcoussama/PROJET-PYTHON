@@ -164,16 +164,53 @@ def create_article():
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        result = article_h.create_article(request.get_data(as_text=True), user["id"])
-        if result["success"]:
-            return redirect(url_for("article_detail", article_id=result["article_id"]))
-        return render_template(
-            "articles/create.html",
-            title="Créer un article - Blog Platform",
-            user=user,
-            error=result["error"]
+        # 1) Récupérer les champs texte
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        content = request.form.get("content", "").strip()
+
+        # 2) Récupérer et valider l’image uploadée
+        image_file = request.files.get("image")
+        saved_filename = None
+
+        if image_file and image_file.filename:
+            if allowed_file(image_file.filename):
+                original_name = secure_filename(image_file.filename)
+                unique_name = f"{uuid.uuid4().hex}_{original_name}"
+                saved_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                # Sauvegarde physique dans static/uploads/
+                image_file.save(saved_path)
+                # On gardera en base : “uploads/nom_du_fichier.png”
+                saved_filename = f"uploads/{unique_name}"
+            else:
+                # Message d’erreur si extension non autorisée
+                return render_template(
+                    "articles/create.html",
+                    title="Créer un article - Blog Platform",
+                    user=user,
+                    error="Type de fichier invalide. Seuls PNG/JPG/JPEG sont autorisés."
+                )
+
+        # 3) Appeler la méthode ArticleHandler (ajustée pour ces nouveaux paramètres)
+        result = article_h.create_article(
+            title=title,
+            description=description,
+            content=content,
+            image_filename=saved_filename,
+            user_id=user["id"]
         )
 
+        if result["success"]:
+            return redirect(url_for("article_detail", article_id=result["article_id"]))
+        else:
+            return render_template(
+                "articles/create.html",
+                title="Créer un article - Blog Platform",
+                user=user,
+                error=result["error"]
+            )
+
+    # Si c’est une requête GET → afficher le formulaire vierge
     return render_template(
         "articles/create.html",
         title="Créer un article - Blog Platform",
@@ -206,22 +243,66 @@ def edit_article(article_id):
     if not user:
         return redirect(url_for("login"))
 
+    # 1) On récupère l'article existant (avec ses champs actuels : title, description, image_filename, etc.)
     article = db.get_article_by_id(article_id) or abort(404)
     if article["author_id"] != user["id"]:
         abort(403)
 
     if request.method == "POST":
-        result = article_h.edit_article(article_id, request.get_data(as_text=True), user["id"])
-        if result["success"]:
-            return redirect(url_for("article_detail", article_id=article_id))
-        return render_template(
-            "articles/edit.html",
-            title=f"Modifier {article['title']} - Blog Platform",
-            user=user,
-            article=article,
-            error=result["error"]
+        # 2) Récupérer les nouveaux champs texte
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        content = request.form.get("content", "").strip()
+
+        # 3) Gérer le nouvel upload éventuel
+        image_file = request.files.get("image")
+        saved_filename = article.get("image_filename")  # Valeur actuelle dans la BD, si aucune modif
+
+        # Si l’utilisateur a choisi une nouvelle image…
+        if image_file and image_file.filename:
+            if allowed_file(image_file.filename):
+                original_name = secure_filename(image_file.filename)
+                unique_name = f"{uuid.uuid4().hex}_{original_name}"
+                saved_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                image_file.save(saved_path)
+                # On écrase la valeur précédente ou on la remplace
+                saved_filename = f"uploads/{unique_name}"
+                # (optionnel) on peut supprimer l’ancienne image sur le disque, si souhaité
+                # old_fn = article.get("image_filename")
+                # if old_fn:
+                #     try: os.remove(os.path.join(app.root_path, "static", old_fn))
+                #     except OSError: pass
+            else:
+                return render_template(
+                    "articles/edit.html",
+                    title=f"Modifier {article['title']} - Blog Platform",
+                    user=user,
+                    article=article,
+                    error="Type de fichier invalide. Seuls PNG/JPG/JPEG sont autorisés."
+                )
+
+        # 4) Appeler la méthode ArticleHandler.edit_article(...) mise à jour
+        result = article_h.edit_article(
+            article_id=article_id,
+            title=title,
+            description=description,
+            content=content,
+            image_filename=saved_filename,
+            user_id=user["id"]
         )
 
+        if result["success"]:
+            return redirect(url_for("article_detail", article_id=article_id))
+        else:
+            return render_template(
+                "articles/edit.html",
+                title=f"Modifier {article['title']} - Blog Platform",
+                user=user,
+                article=article,
+                error=result["error"]
+            )
+
+    # Si GET → on affiche le formulaire prérempli
     return render_template(
         "articles/edit.html",
         title=f"Modifier {article['title']} - Blog Platform",
