@@ -1,165 +1,605 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Articles sauvegardés</h2>
+<div class="page-header">
+    <div class="header-content">
+        <h2><i class="fas fa-bookmark"></i> Articles sauvegardés</h2>
+    </div>
+</div>
 
 {% if articles %}
-<div class="article-list">
-    {% for a in articles %}
-    <div class="article-card">
-        <h3>
-            <a href="/article/{{ a.id }}">{{ a.title }}</a>
-        </h3>
+<div class="articles-container">
+    <div class="article-list">
+        {% for a in articles %}
+        <div class="article-card" data-article-id="{{ a.id }}" tabindex="0">
+            <a href="/article/{{ a.id }}" class="article-link">
+                <div class="card-header">
+                    {% if a.image_filename %}
+                    <div class="article-image-container">
+                        <img src="/static/{{ a.image_filename }}" alt="{{ a.title }}" class="article-image"
+                            loading="lazy" />
+                        <div class="image-overlay">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="article-placeholder">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    {% endif %}
+                </div>
 
-        {% if a.image_url %}
-        <img src="{{ a.image_url }}" alt="{{ a.title }}" class="article-image" />
-        {% endif %}
+                <div class="card-content">
+                    <h3 class="article-title">{{ a.title }}</h3>
 
-        <p>{{ a.content|truncate(150) }}</p>
+                    <p class="article-excerpt">{{ a.content|truncate(150) }}</p>
 
-        <div class="article-meta">
-            <span><i class="fas fa-user"></i> {{ a.author_name }}</span>
-            <span><i class="fas fa-calendar"></i> {{ a.created_at|format_date }}</span>
+                    <div class="article-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-user"></i>
+                            <span>{{ a.author_name }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ a.created_at|format_date }}</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <div class="card-actions">
+                <button class="btn btn-secondary btn-unsave" data-id="{{ a.id }}">
+                    <i class="fas fa-bookmark"></i> Retirer
+                </button>
+            </div>
         </div>
-
-        <div class="article-actions">
-            <a href="/article/{{ a.id }}" class="btn btn-primary">Voir</a>
-            <button class="btn btn-secondary btn-unsave" data-id="{{ a.id }}">
-                Retirer
-            </button>
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 {% else %}
 <div class="empty-state">
-    <i class="fas fa-bookmark fa-3x"></i>
+    <div class="empty-icon">
+        <i class="fas fa-bookmark"></i>
+    </div>
     <h3>Aucun article sauvegardé</h3>
     <p class="empty-desc">Vous n'avez sauvegardé aucun article pour le moment.</p>
-    <a href="/" class="btn btn-primary">Découvrir des articles</a>
+    <a href="/" class="btn btn-primary btn-discover">
+        <i class="fas fa-newspaper"></i> Découvrir des articles
+    </a>
 </div>
 {% endif %}
 
-<script>
-    document.querySelectorAll('.btn-unsave').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (!confirm('Retirer cet article ?')) return;
-            const id = btn.dataset.id;
-            const res = await fetch(`/save-article/${id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            });
-            const d = await res.json();
-            if (d.success && !d.saved) {
-                btn.closest('.article-card').remove();
-                if (!document.querySelector('.article-card')) location.reload();
-            }
-        });
-    });
-</script>
-
 <style>
-    /* exactly the same grid/card styles as my_articles */
+    /* Enhanced Saved Articles Styles */
+    .page-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        color: white;
+        padding: clamp(1.5rem, 3vw, 2rem);
+        border-radius: var(--border-radius-lg);
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header h2 {
+        color: white;
+        margin: 0;
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .articles-container {
+        position: relative;
+    }
+
     .article-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 1.5rem;
         margin-top: 1rem;
     }
 
     .article-card {
-        background: #fff;
-        border-radius: 6px;
-        padding: 1rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        background: var(--card-background);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+        position: relative;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        border: 1px solid var(--border-color);
+        animation: cardSlideUp 0.6s ease-out;
+        animation-fill-mode: both;
+        cursor: pointer;
+        tabindex: 0;
     }
 
-    .article-card h3 {
-        margin-bottom: .5rem;
+    .article-card:nth-child(1) {
+        animation-delay: 0.1s;
     }
 
-    .article-card h3 a {
-        color: #007bff;
+    .article-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .article-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .article-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .article-card:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .article-card:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+
+    @keyframes cardSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .article-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .article-card:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+
+    .article-link {
+        display: block;
         text-decoration: none;
+        color: inherit;
+    }
+
+    .card-header {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .article-image-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
     }
 
     .article-image {
         width: 100%;
-        height: 160px;
+        height: 100%;
         object-fit: cover;
-        border-radius: 4px;
-        margin-bottom: .75rem;
+        transition: var(--transition);
     }
 
-    .article-card p {
+    .article-card:hover .article-image {
+        transform: scale(1.05);
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .image-overlay i {
+        color: white;
+        font-size: 2rem;
+    }
+
+    .article-card:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .article-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+    }
+
+    .article-placeholder i {
+        font-size: 3rem;
+        opacity: 0.5;
+    }
+
+    .card-content {
+        padding: clamp(1rem, 2vw, 1.5rem);
         flex: 1;
-        color: #666;
-        margin-bottom: .75rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-title {
+        margin: 0 0 1rem 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--text-color);
+        transition: var(--transition);
+    }
+
+    .article-card:hover .article-title {
+        color: var(--primary-color);
+    }
+
+    .article-excerpt {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        flex: 1;
     }
 
     .article-meta {
-        font-size: .85rem;
-        color: #888;
         display: flex;
-        gap: .5rem;
-        margin-bottom: .75rem;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        font-size: 0.9rem;
+        color: var(--text-muted);
     }
 
-    .article-actions {
+    .meta-item {
         display: flex;
-        gap: .5rem;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .meta-item i {
+        opacity: 0.7;
+    }
+
+    .card-actions {
+        padding: clamp(0.8rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.5rem);
+        background: #f8f9fa;
+        display: flex;
+        gap: 0.75rem;
+        border-top: 1px solid var(--border-color);
     }
 
     .btn {
-        flex: 1;
-        text-align: center;
-        padding: .5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: clamp(0.5rem, 1vw, 0.6rem) 1rem;
         border: none;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: .9rem;
+        border-radius: var(--border-radius);
         cursor: pointer;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        flex: 1;
+    }
+
+    .btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+        left: 100%;
     }
 
     .btn-primary {
-        background: #007bff;
-        color: #fff;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
     }
 
     .btn-primary:hover {
-        background: #0056b3;
+        background: linear-gradient(135deg, var(--primary-dark), #004085);
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
     }
 
     .btn-secondary {
-        background: #6c757d;
-        color: #fff;
+        background: linear-gradient(135deg, var(--secondary-color), #545b62);
+        color: white;
     }
 
     .btn-secondary:hover {
-        background: #545b62;
+        background: linear-gradient(135deg, #545b62, #3d4142);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-discover {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: clamp(0.8rem, 1.5vw, 1rem) 2rem;
+        font-size: 1.1rem;
+        box-shadow: var(--shadow-md);
+        max-width: 300px;
+    }
+
+    .btn-discover:hover {
+        background: linear-gradient(135deg, var(--primary-dark), #004085);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-discover:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
     }
 
     .empty-state {
         text-align: center;
-        padding: 3rem 1rem;
-        color: #666;
+        padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 2vw, 2rem);
+        background: var(--card-background);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        animation: fadeIn 0.6s ease-out;
     }
 
-    .empty-state i {
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .empty-icon i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .empty-state h3 {
+        font-size: clamp(1.5rem, 2.5vw, 1.8rem);
+        color: var(--text-color);
         margin-bottom: 1rem;
-        color: #ddd;
-    }
-
-    .empty-state a.btn-primary {
-        margin-top: 1rem;
+        font-weight: 700;
     }
 
     .empty-desc {
-        margin-top: 10px;
-        margin-bottom: 20px;
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        max-width: 360px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Loading animation for actions */
+    .btn.loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .btn.loading::after {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 1024px) {
+        .article-list {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .article-list {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .card-actions {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header {
+            padding: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .page-header h2 {
+            font-size: clamp(1.3rem, 2vw, 1.5rem);
+        }
+
+        .empty-state {
+            padding: clamp(1.5rem, 3vw, 3rem) 1rem;
+        }
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *:before,
+        *:after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0 !important;
+        }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Unsave button functionality
+        document.querySelectorAll('.btn-unsave').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation(); // Prevent card click
+                if (!confirm('Retirer cet article ?')) return;
+                btn.classList.add('loading');
+                btn.disabled = true;
+                const id = btn.dataset.id;
+                try {
+                    const res = await fetch(`/save-article/${id}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+                    const d = await res.json();
+                    if (d.success && !d.saved) {
+                        btn.closest('.article-card').remove();
+                        if (!document.querySelector('.article-card')) location.reload();
+                    } else {
+                        btn.classList.remove('loading');
+                        btn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error unsaving article:', error);
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            });
+        });
+
+        // Handle card click and keyboard navigation
+        document.querySelectorAll('.article-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.card-actions')) {
+                    const link = card.querySelector('.article-link');
+                    if (link) window.location.href = link.href;
+                }
+            });
+
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const link = card.querySelector('.article-link');
+                    if (link) window.location.href = link.href;
+                }
+            });
+        });
+
+        // Lazy load images
+        const images = document.querySelectorAll('.article-image');
+        const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.style.opacity = '1';
+                    imageObserver.unobserve(img);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        images.forEach(img => {
+            img.style.opacity = '0';
+            img.style.transition = 'opacity 0.3s ease';
+            imageObserver.observe(img);
+        });
+    });
+</script>
 {% endblock %}
