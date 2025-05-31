@@ -37,8 +37,9 @@ class Database:
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
+                description TEXT
                 content TEXT NOT NULL,
-                image_url TEXT,
+                image_filename TEXT,
                 author_id INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

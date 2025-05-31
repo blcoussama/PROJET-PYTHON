@@ -1,5 +1,5 @@
 # requirements.txt
 
 # Aucun package tiers nécessaire : 
-# tous tes imports (http.server, sqlite3, hashlib, etc.) font partie de la stdlib de Python.
+# tous les imports (http.server, sqlite3, hashlib, etc.) font partie de la stdlib de Python.
 flask>=2.2.0
