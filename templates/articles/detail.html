@@ -1,36 +1,68 @@
 {% extends "base.html" %}
 
 {% block content %}
-<article
-    style="background:#fff; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1); overflow:hidden; margin-bottom:2rem;">
-    {% if article.image_url %}
-    <img src="{{ article.image_url }}" alt="{{ article.title }}"
+<article style="
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 2rem;
+">
+    {# Affiche l’image si on en a une #}
+    {% if article.image_filename %}
+    <img src="/static/{{ article.image_filename }}" alt="{{ article.title }}"
         style="width:100%; height:300px; object-fit:cover; display:block;">
     {% endif %}
-    <div style="padding:1.5rem;">
+
+    <div style="padding: 1.5rem;">
         <header style="margin-bottom:1rem;">
             <h1 style="margin-bottom:.5rem; color:#333;">{{ article.title }}</h1>
+            {# On affiche la description juste sous le titre, si elle n’est pas vide #}
+            {% if article.description %}
+            <p style="
+                font-size: 1rem;
+                color: #555;
+                margin-bottom: 1rem;
+                line-height: 1.4;
+            ">{{ article.description }}</p>
+            {% endif %}
             <div style="color:#666; font-size:.9rem;">
                 <i class="fas fa-user"></i> {{ article.author_name }}
                 &nbsp;|&nbsp;
                 <i class="fas fa-calendar"></i> {{ article.created_at|format_date }}
             </div>
         </header>
-        <div style="line-height:1.6; margin-bottom:1.5rem; white-space:pre-wrap;">
+
+        <div style="line-height: 1.6; margin-bottom: 1.5rem; white-space: pre-wrap;">
             {{ article.content }}
         </div>
-        <footer style="display:flex; justify-content:space-between; align-items:center;
-                   padding-top:1rem; border-top:1px solid #eee;">
-            <div style="display:flex; gap:1rem;">
+
+        <footer style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        ">
+            <div style="display: flex; gap: 1rem;">
                 {% if user %}
-                <button onclick="toggleLike({{ article.id }})" id="like-btn" style="background:none; border:none;
-                         color:{% if is_liked %}#e74c3c{% else %}#666{% endif %};
-                         cursor:pointer; font-size:1rem;">
-                    <i class="fas fa-heart"></i> <span id="likes-count">{{ article.likes_count }}</span>
+                <button onclick="toggleLike({{ article.id }})" id="like-btn" style="
+                            background: none;
+                            border: none;
+                            color: {% if is_liked %}#e74c3c{% else %}#666{% endif %};
+                            cursor: pointer;
+                            font-size: 1rem;
+                        ">
+                    <i class="fas fa-heart"></i>
+                    <span id="likes-count">{{ article.likes_count }}</span>
                 </button>
-                <button onclick="toggleSave({{ article.id }})" id="save-btn" style="background:none; border:none;
-                         color:{% if is_saved %}#f39c12{% else %}#666{% endif %};
-                         cursor:pointer; font-size:1rem;">
+                <button onclick="toggleSave({{ article.id }})" id="save-btn" style="
+                            background: none;
+                            border: none;
+                            color: {% if is_saved %}#f39c12{% else %}#666{% endif %};
+                            cursor: pointer;
+                            font-size: 1rem;
+                        ">
                     <i class="fas fa-bookmark"></i>
                     <span id="save-text">{% if is_saved %}Sauvegardé{% else %}Sauvegarder{% endif %}</span>
                 </button>
@@ -39,14 +71,28 @@
                 {% endif %}
                 <span style="color:#666;"><i class="fas fa-comment"></i> {{ comments|length }}</span>
             </div>
+
             {% if user and article.author_id == user.id %}
             <div style="display:flex; gap:.5rem;">
-                <a href="/edit-article/{{ article.id }}" style="background:#007bff; color:#fff; padding:.4rem .8rem;
-                  border-radius:4px; text-decoration:none; font-size:.9rem;">
+                <a href="/edit-article/{{ article.id }}" style="
+                       background: #007bff;
+                       color: #fff;
+                       padding: .4rem .8rem;
+                       border-radius: 4px;
+                       text-decoration: none;
+                       font-size: .9rem;
+                   ">
                     <i class="fas fa-edit"></i> Modifier
                 </a>
-                <button onclick="deleteArticle({{ article.id }})" style="background:#dc3545; color:#fff; padding:.4rem .8rem;
-                       border:none; border-radius:4px; cursor:pointer; font-size:.9rem;">
+                <button onclick="deleteArticle({{ article.id }})" style="
+                            background: #dc3545;
+                            color: #fff;
+                            padding: .4rem .8rem;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: .9rem;
+                        ">
                     <i class="fas fa-trash"></i> Supprimer
                 </button>
             </div>
@@ -55,16 +101,33 @@
     </div>
 </article>
 
-<section style="background:#fff; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1); padding:1.5rem;">
+<section style="
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+">
     <h3 style="margin-bottom:1rem;">Commentaires ({{ comments|length }})</h3>
 
     {% if user %}
     <form onsubmit="addComment(event, {{ article.id }})" style="margin-bottom:1.5rem;">
         <div style="display:flex; gap:.5rem;">
-            <textarea name="content" placeholder="Ajoutez un commentaire..." required style="flex:1; padding:.6rem; border:1px solid #ccc; border-radius:4px;
-                       resize:vertical; min-height:80px;"></textarea>
-            <button type="submit" style="background:#007bff; color:#fff; border:none;
-                     border-radius:4px; padding:.6rem 1rem; cursor:pointer;">
+            <textarea name="content" placeholder="Ajoutez un commentaire..." required style="
+                          flex:1;
+                          padding:.6rem;
+                          border:1px solid #ccc;
+                          border-radius:4px;
+                          resize:vertical;
+                          min-height:80px;
+                      "></textarea>
+            <button type="submit" style="
+                background: #007bff;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                padding: .6rem 1rem;
+                cursor: pointer;
+            ">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
@@ -74,11 +137,16 @@
     <div id="comments-list">
         {% for comment in comments %}
         <div style="border-bottom:1px solid #eee; padding:1rem 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: .5rem;
+            ">
                 <strong>{{ comment.author_name }}</strong>
                 <small style="color:#666;">{{ comment.created_at|format_date }}</small>
             </div>
-            <p style="line-height:1.5;">{{ comment.content }}</p>
+            <p style="line-height: 1.5;">{{ comment.content }}</p>
         </div>
         {% endfor %}
     </div>
@@ -88,13 +156,7 @@
     {% endif %}
 </section>
 
-
-<!-- page‐specific CSS must live inside a <style> tag -->
-<style>
-    /* if you had any additional CSS, put it in here */
-</style>
-
-<!-- page‐specific JS must live inside a <script> tag -->
+<!-- Ajoutez ici un éventuel CSS/JS spécifique à cette page -->
 <script>
     function toggleLike(articleId) {
         fetch('/like-article/' + articleId, { method: 'POST' })
@@ -141,26 +203,21 @@
         const content = form.content.value.trim();
         if (!content) return alert('Veuillez saisir un commentaire');
 
-        // build x-www-form-urlencoded body
         const body = new URLSearchParams({ content });
-
         fetch('/comment-article/' + articleId, {
             method: 'POST',
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-            },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: body.toString()
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-            // update the comments list in-place instead of reload if you want…
-            location.reload();
-            } else {
-            alert(data.error);
-            }
-        })
-        .catch(() => alert('Erreur de connexion'));
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(() => alert('Erreur de connexion'));
     }
 </script>
 {% endblock %}

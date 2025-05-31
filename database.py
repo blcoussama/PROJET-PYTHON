@@ -37,7 +37,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
-                description TEXT
+                description TEXT,
                 content TEXT NOT NULL,
                 image_filename TEXT,
                 author_id INTEGER NOT NULL,
@@ -179,7 +179,7 @@ class Database:
         
         cursor.execute('''
             INSERT INTO articles (title, description, content, image_filename, author_id)
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
         ''', (title, description, content, image_filename, author_id))
         article_id = cursor.lastrowid
         conn.commit()

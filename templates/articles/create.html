@@ -4,12 +4,16 @@
 <div style="max-width: 600px; margin: 0 auto;">
     <h2 style="margin-bottom: 1.5rem; text-align: center;">Créer un article</h2>
 
-    <form method="POST" action="/create-article" style="
+    <!--
+      IMPORTANT : pour l’upload de fichier, il faut enctype="multipart/form-data"
+    -->
+    <form method="POST" action="/create-article" enctype="multipart/form-data" style="
         background: #fff;
         padding: 1.5rem;
         border-radius: 6px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     ">
+        <!-- Champ “Titre” -->
         <div style="margin-bottom: 1rem;">
             <label for="title" style="
                 display: block;
@@ -17,27 +21,45 @@
                 font-weight: bold;
             ">Titre</label>
             <input type="text" id="title" name="title" required style="
-                width: 100%;
-                padding: 0.6rem;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-            ">
+                       width: 100%;
+                       padding: 0.6rem;
+                       border: 1px solid #ccc;
+                       border-radius: 4px;
+                   ">
         </div>
 
+        <!-- NOUVEAU Champ “Description” -->
         <div style="margin-bottom: 1rem;">
-            <label for="image_url" style="
+            <label for="description" style="
                 display: block;
                 margin-bottom: 0.3rem;
                 font-weight: bold;
-            ">URL de l'image (optionnel)</label>
-            <input type="text" id="image_url" name="image_url" style="
-                width: 100%;
-                padding: 0.6rem;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-            ">
+            ">Description (optionnelle)</label>
+            <textarea id="description" name="description" rows="3" style="
+                          width: 100%;
+                          padding: 0.6rem;
+                          border: 1px solid #ccc;
+                          border-radius: 4px;
+                          resize: vertical;
+                      "></textarea>
         </div>
 
+        <!-- CHAMP “Upload d’image” remplaçant l’ancien “URL” -->
+        <div style="margin-bottom: 1rem;">
+            <label for="image" style="
+                display: block;
+                margin-bottom: 0.3rem;
+                font-weight: bold;
+            ">Image (PNG/JPG/JPEG, optionnelle)</label>
+            <input type="file" id="image" name="image" accept=".png, .jpg, .jpeg" style="
+                       width: 100%;
+                       padding: 0.3rem 0.6rem;
+                       border: 1px solid #ccc;
+                       border-radius: 4px;
+                   ">
+        </div>
+
+        <!-- Champ “Contenu” -->
         <div style="margin-bottom: 1rem;">
             <label for="content" style="
                 display: block;
@@ -45,14 +67,15 @@
                 font-weight: bold;
             ">Contenu</label>
             <textarea id="content" name="content" rows="10" required style="
-                width: 100%;
-                padding: 0.6rem;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                resize: vertical;
-            "></textarea>
+                          width: 100%;
+                          padding: 0.6rem;
+                          border: 1px solid #ccc;
+                          border-radius: 4px;
+                          resize: vertical;
+                      "></textarea>
         </div>
 
+        <!-- Bouton “Publier” -->
         <button type="submit" style="
             display: block;
             width: 100%;

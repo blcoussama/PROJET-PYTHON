@@ -4,55 +4,103 @@
 <div style="max-width: 600px; margin: 0 auto;">
     <h2 style="margin-bottom: 1.5rem; text-align: center;">Modifier l'article</h2>
 
-    <form method="POST" action="/edit-article/{{ article.id }}" style="
-        background: #fff;
-        padding: 1.5rem;
-        border-radius: 6px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    ">
+    <!-- encore enctype="multipart/form-data" pour l’upload éventuel -->
+    <form method="POST"
+          action="/edit-article/{{ article.id }}"
+          enctype="multipart/form-data"
+          style="
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          ">
+        <!-- Champ “Titre” pré-rempli -->
         <div style="margin-bottom: 1rem;">
             <label for="title" style="
                 display: block;
                 margin-bottom: 0.3rem;
                 font-weight: bold;
             ">Titre</label>
-            <input type="text" id="title" name="title" value="{{ article.title }}" required style="
-                width: 100%;
-                padding: 0.6rem;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-            ">
+            <input type="text"
+                   id="title"
+                   name="title"
+                   value="{{ article.title }}"
+                   required
+                   style="
+                       width: 100%;
+                       padding: 0.6rem;
+                       border: 1px solid #ccc;
+                       border-radius: 4px;
+                   ">
         </div>
 
+        <!-- Champ “Description” pré-rempli (si existant) -->
         <div style="margin-bottom: 1rem;">
-            <label for="image_url" style="
+            <label for="description" style="
                 display: block;
                 margin-bottom: 0.3rem;
                 font-weight: bold;
-            ">URL de l'image (optionnel)</label>
-            <input type="text" id="image_url" name="image_url" value="{{ article.image_url or '' }}" style="
-                width: 100%;
-                padding: 0.6rem;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-            ">
+            ">Description (optionnelle)</label>
+            <textarea id="description"
+                      name="description"
+                      rows="3"
+                      style="
+                          width: 100%;
+                          padding: 0.6rem;
+                          border: 1px solid #ccc;
+                          border-radius: 4px;
+                          resize: vertical;
+                      ">{{ article.description or "" }}</textarea>
         </div>
 
+        <!-- CHAMP “Upload d’image” : on indique le fichier précédent si existant -->
+        <div style="margin-bottom: 1rem;">
+            <label for="image" style="
+                display: block;
+                margin-bottom: 0.3rem;
+                font-weight: bold;
+            ">Remplacer l’image (optionnel)</label>
+            <input type="file"
+                   id="image"
+                   name="image"
+                   accept=".png, .jpg, .jpeg"
+                   style="
+                       width: 100%;
+                       padding: 0.3rem 0.6rem;
+                       border: 1px solid #ccc;
+                       border-radius: 4px;
+                   ">
+            {% if article.image_filename %}
+            <small style="color:#555;">
+                Image actuelle : 
+                <a href="/static/{{ article.image_filename }}" target="_blank">
+                    Voir l’image
+                </a>
+            </small>
+            {% endif %}
+        </div>
+
+        <!-- Champ “Contenu” pré-rempli -->
         <div style="margin-bottom: 1rem;">
             <label for="content" style="
                 display: block;
                 margin-bottom: 0.3rem;
                 font-weight: bold;
             ">Contenu</label>
-            <textarea id="content" name="content" rows="10" required style="
-                width: 100%;
-                padding: 0.6rem;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                resize: vertical;
-            ">{{ article.content }}</textarea>
+            <textarea id="content"
+                      name="content"
+                      rows="10"
+                      required
+                      style="
+                          width: 100%;
+                          padding: 0.6rem;
+                          border: 1px solid #ccc;
+                          border-radius: 4px;
+                          resize: vertical;
+                      ">{{ article.content }}</textarea>
         </div>
 
+        <!-- Boutons “Enregistrer” / “Annuler” -->
         <div style="display: flex; gap: 1rem;">
             <button type="submit" style="
                 flex: 1;

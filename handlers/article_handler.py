@@ -6,58 +6,82 @@ class ArticleHandler:
         self.db = database
         self.session_manager = session_manager
 
-    def create_article(self, post_data, user_id):
-        """Create a new article"""
+    def create_article(self, title, description, content, image_filename, user_id):
+        """
+        Create a new article avec les champs :
+          - title (str)
+          - description (str ou "")
+          - content (str)
+          - image_filename (str ou None) → chemin relatif sous /static/uploads/...
+          - user_id (int)
+        """
         try:
-            # Parse form data
-            data = urllib.parse.parse_qs(post_data)
-            title = data.get('title', [''])[0].strip()
-            content = data.get('content', [''])[0].strip()
-            image_url = data.get('image_url', [''])[0].strip()
-
-            # Validate input
+            # 1) Validation des champs “titre” et “contenu”
             validation_result = self.validate_article_data(title, content)
-            if not validation_result['valid']:
-                return {'success': False, 'error': validation_result['error']}
+            if not validation_result["valid"]:
+                return {"success": False, "error": validation_result["error"]}
 
-            # Create article
-            article_id = self.db.create_article(title, content, image_url, user_id)
+            # 2) Appel à la couche basse (Database) pour créer l’article
+            article_id = self.db.create_article(
+                title=title,
+                description=description,
+                content=content,
+                image_filename=image_filename,
+                author_id=user_id
+            )
             if not article_id:
-                return {'success': False, 'error': 'Erreur lors de la création de l\'article'}
+                return {
+                    "success": False,
+                    "error": "Erreur lors de la création de l’article"
+                }
 
-            return {'success': True, 'article_id': article_id}
+            return {"success": True, "article_id": article_id}
 
         except Exception as e:
-            return {'success': False, 'error': 'Erreur lors de la création de l\'article'}
+            # Vous pouvez logger “e” si besoin pour débogage
+            return {"success": False, "error": "Erreur lors de la création de l’article"}
 
-    def edit_article(self, article_id, post_data, user_id):
-        """Edit an existing article"""
+    def edit_article(self, article_id, title, description, content, image_filename, user_id):
+        """
+        Edit an existing article.  
+        Paramètres :
+          - article_id   (int)
+          - title        (str)
+          - description  (str ou "")
+          - content      (str)
+          - image_filename (str ou None) → chemin relatif en base
+          - user_id      (int)
+        """
         try:
-            # Check if article exists and belongs to user
+            # 1) Vérifier que l’article existe et qu’on est bien l’auteur
             article = self.db.get_article_by_id(article_id)
-            if not article or article['author_id'] != user_id:
-                return {'success': False, 'error': 'Article non trouvé ou non autorisé'}
+            if not article or article["author_id"] != user_id:
+                return {"success": False, "error": "Article non trouvé ou non autorisé"}
 
-            # Parse form data
-            data = urllib.parse.parse_qs(post_data)
-            title = data.get('title', [''])[0].strip()
-            content = data.get('content', [''])[0].strip()
-            image_url = data.get('image_url', [''])[0].strip()
-
-            # Validate input
+            # 2) Validation des champs “titre” et “contenu”
             validation_result = self.validate_article_data(title, content)
-            if not validation_result['valid']:
-                return {'success': False, 'error': validation_result['error']}
+            if not validation_result["valid"]:
+                return {"success": False, "error": validation_result["error"]}
 
-            # Update article
-            success = self.db.update_article(article_id, title, content, image_url)
+            # 3) Mise à jour dans la DB
+            success = self.db.update_article(
+                article_id=article_id,
+                title=title,
+                description=description,
+                content=content,
+                image_filename=image_filename
+            )
             if not success:
-                return {'success': False, 'error': 'Erreur lors de la modification de l\'article'}
+                return {
+                    "success": False,
+                    "error": "Erreur lors de la modification de l’article"
+                }
 
-            return {'success': True}
+            return {"success": True}
 
         except Exception as e:
-            return {'success': False, 'error': 'Erreur lors de la modification de l\'article'}
+            # Vous pouvez logger “e” si besoin
+            return {"success": False, "error": "Erreur lors de la modification de l’article"}
 
     def delete_article(self, article_id, user_id):
         """Delete an article"""

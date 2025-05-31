@@ -48,21 +48,33 @@
             background:#fff; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1);
             overflow:hidden; display:flex; flex-direction:column;
           ">
-            {% if a.image_url %}
-            <img src="{{ a.image_url }}" alt="{{ a.title }}" style="width:100%; display:block;">
+            {# Affiche l’image si on en a une #}
+            {% if a.image_filename %}
+            <img src="/static/{{ a.image_filename }}" alt="{{ a.title }}" style="width:100%; display:block;">
             {% endif %}
+
             <div style="padding:1rem; flex:1; display:flex; flex-direction:column;">
                 <h3 style="margin-bottom:.5rem;">
                     <a href="/article/{{ a.id }}" style="color:#007bff; text-decoration:none;">
                         {{ a.title }}
                     </a>
                 </h3>
+
                 <small style="color:#666;">
                     <i class="fas fa-user"></i> {{ a.author_name }}
                     &nbsp;|&nbsp;
                     <i class="fas fa-calendar"></i> {{ a.created_at | format_date }}
                 </small>
-                <p style="margin:1rem 0; flex:1;">{{ a.content | truncate(150) }}</p>
+
+                {# Affiche la description si existante, sinon un extrait du contenu #}
+                <p style="margin:1rem 0; flex:1; color:#444;">
+                    {% if a.description %}
+                    {{ a.description | truncate(150) }}
+                    {% else %}
+                    {{ a.content | truncate(150) }}
+                    {% endif %}
+                </p>
+
                 <div style="display:flex; gap:1rem;">
                     <span><i class="fas fa-heart"></i> {{ a.likes_count }}</span>
                     <span><i class="fas fa-comment"></i> {{ a.comments_count }}</span>
