@@ -172,15 +172,15 @@ class Database:
         return dict(user) if user else None
 
     # Article methods
-    def create_article(self, title, content, image_url, author_id):
+    def create_article(self, title, description, content, image_filename, author_id):
         """Create a new article"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
         cursor.execute('''
-            INSERT INTO articles (title, content, image_url, author_id)
+            INSERT INTO articles (title, description, content, image_filename, author_id)
             VALUES (?, ?, ?, ?)
-        ''', (title, content, image_url, author_id))
+        ''', (title, description, content, image_filename, author_id))
         article_id = cursor.lastrowid
         conn.commit()
         conn.close()
@@ -243,16 +243,16 @@ class Database:
         
         return [dict(article) for article in articles]
 
-    def update_article(self, article_id, title, content, image_url):
+    def update_article(self, article_id, title, description, content, image_filename):
         """Update an article"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
         cursor.execute('''
-            UPDATE articles 
-            SET title = ?, content = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        ''', (title, content, image_url, article_id))
++            UPDATE articles
++            SET title = ?, description = ?, content = ?, image_filename = ?, updated_at = CURRENT_TIMESTAMP
++            WHERE id = ?
++        ''', (title, description, content, image_filename, article_id))
         success = cursor.rowcount > 0
         conn.commit()
         conn.close()

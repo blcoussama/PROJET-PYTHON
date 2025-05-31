@@ -1,3 +1,6 @@
+import os
+import uuid
+from werkzeug.utils import secure_filename
 from flask import (
     Flask, render_template, request, redirect,
     url_for, make_response, jsonify, abort
@@ -13,6 +16,20 @@ app = Flask(
     __name__,
     template_folder="templates"  # répertoire des templates
 )
+
+# ── Configuration pour uploader des images ────────────────────────────
+
+# On va stocker les fichiers uploadés dans static/uploads
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+
+# On autorise seulement ces extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    """Retourne True si l’extension du fichier est autorisée."""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # ── Filtres de Template ─────────────────────────────────────────────
 @app.template_filter('format_date')
