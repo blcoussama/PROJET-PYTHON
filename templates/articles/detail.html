@@ -1,199 +1,909 @@
 {% extends "base.html" %}
 
 {% block content %}
-<article style="
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    margin-bottom: 2rem;
-">
-    {# Affiche l’image si on en a une #}
-    {% if article.image_filename %}
-    <img src="/static/{{ article.image_filename }}" alt="{{ article.title }}"
-        style="width:100%; height:300px; object-fit:cover; display:block;">
-    {% endif %}
+<div class="article-detail-container">
+    <!-- Top Section: Title (50%) and Image (50%) -->
+    <section class="article-hero-section">
+        <div class="hero-title-section">
+            <h1 class="article-title">{{ article.title }}</h1>
+            <div class="article-meta">
+                <div class="meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>{{ article.author_name }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ article.created_at|format_date }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image-section">
+            {% if article.image_filename %}
+            <div class="article-hero">
+                <img src="/static/{{ article.image_filename }}" alt="{{ article.title }}" class="hero-image">
+                <div class="hero-overlay"></div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
 
-    <div style="padding: 1.5rem;">
-        <header style="margin-bottom:1rem;">
-            <h1 style="margin-bottom:.5rem; color:#333;">{{ article.title }}</h1>
-            {# On affiche la description juste sous le titre, si elle n’est pas vide #}
+    <!-- Middle Section: Content (70%) and Actions (30%) -->
+    <section class="article-main-section">
+        <div class="article-content-area">
             {% if article.description %}
-            <p style="
-                font-size: 1rem;
-                color: #555;
-                margin-bottom: 1rem;
-                line-height: 1.4;
-            ">{{ article.description }}</p>
-            {% endif %}
-            <div style="color:#666; font-size:.9rem;">
-                <i class="fas fa-user"></i> {{ article.author_name }}
-                &nbsp;|&nbsp;
-                <i class="fas fa-calendar"></i> {{ article.created_at|format_date }}
+            <div class="article-description">
+                <h3>Description</h3>
+                <p>{{ article.description }}</p>
             </div>
-        </header>
+            {% endif %}
 
-        <div style="line-height: 1.6; margin-bottom: 1.5rem; white-space: pre-wrap;">
-            {{ article.content }}
+            <div class="article-content">
+                <h3>Contenu de l'article</h3>
+                <div class="article-body">
+                    {{ article.content }}
+                </div>
+            </div>
         </div>
 
-        <footer style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-        ">
-            <div style="display: flex; gap: 1rem;">
-                {% if user %}
-                <button onclick="toggleLike({{ article.id }})" id="like-btn" style="
-                            background: none;
-                            border: none;
-                            color: {% if is_liked %}#e74c3c{% else %}#666{% endif %};
-                            cursor: pointer;
-                            font-size: 1rem;
-                        ">
-                    <i class="fas fa-heart"></i>
-                    <span id="likes-count">{{ article.likes_count }}</span>
-                </button>
-                <button onclick="toggleSave({{ article.id }})" id="save-btn" style="
-                            background: none;
-                            border: none;
-                            color: {% if is_saved %}#f39c12{% else %}#666{% endif %};
-                            cursor: pointer;
-                            font-size: 1rem;
-                        ">
-                    <i class="fas fa-bookmark"></i>
-                    <span id="save-text">{% if is_saved %}Sauvegardé{% else %}Sauvegarder{% endif %}</span>
-                </button>
-                {% else %}
-                <span style="color:#666;"><i class="fas fa-heart"></i> {{ article.likes_count }}</span>
+        <div class="article-actions-area">
+            <div class="sticky-sidebar">
+                {# Actions Section #}
+                <div class="sidebar-section">
+                    <h4><i class="fas fa-heart"></i> Actions</h4>
+                    <div class="article-actions">
+                        {% if user %}
+                        <button onclick="toggleLike({{ article.id }})" id="like-btn"
+                            class="action-btn like-btn {% if is_liked %}active{% endif %}">
+                            <i class="fas fa-heart"></i>
+                            <span id="likes-count">{{ article.likes_count }}</span> J'aime
+                        </button>
+                        <button onclick="toggleSave({{ article.id }})" id="save-btn"
+                            class="action-btn save-btn {% if is_saved %}active{% endif %}">
+                            <i class="fas fa-bookmark"></i>
+                            <span id="save-text">{% if is_saved %}Sauvegardé{% else %}Sauvegarder{% endif %}</span>
+                        </button>
+                        {% else %}
+                        <div class="action-btn disabled">
+                            <i class="fas fa-heart"></i>
+                            <span>{{ article.likes_count }} J'aime</span>
+                        </div>
+                        {% endif %}
+                        <div class="action-btn disabled">
+                            <i class="fas fa-comment"></i>
+                            <span>{{ comments|length }} Commentaires</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Author Actions #}
+                {% if user and article.author_id == user.id %}
+                <div class="sidebar-section">
+                    <h4><i class="fas fa-cog"></i> Gestion</h4>
+                    <div class="author-actions">
+                        <a href="/edit-article/{{ article.id }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <button onclick="deleteArticle({{ article.id }})" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
                 {% endif %}
-                <span style="color:#666;"><i class="fas fa-comment"></i> {{ comments|length }}</span>
+
+                {% if not user %}
+                <div class="sidebar-section">
+                    <h4><i class="fas fa-sign-in-alt"></i> Connexion requise</h4>
+                    <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">
+                        Connectez-vous pour liker, sauvegarder et commenter cet article.
+                    </p>
+                    <a href="/login" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Section: Comments (Full Width) -->
+    <section class="comments-section">
+        <div class="comments-container">
+            <div class="comments-header">
+                <h3><i class="fas fa-comments"></i> Commentaires ({{ comments|length }})</h3>
             </div>
 
-            {% if user and article.author_id == user.id %}
-            <div style="display:flex; gap:.5rem;">
-                <a href="/edit-article/{{ article.id }}" style="
-                       background: #007bff;
-                       color: #fff;
-                       padding: .4rem .8rem;
-                       border-radius: 4px;
-                       text-decoration: none;
-                       font-size: .9rem;
-                   ">
-                    <i class="fas fa-edit"></i> Modifier
-                </a>
-                <button onclick="deleteArticle({{ article.id }})" style="
-                            background: #dc3545;
-                            color: #fff;
-                            padding: .4rem .8rem;
-                            border: none;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            font-size: .9rem;
-                        ">
-                    <i class="fas fa-trash"></i> Supprimer
-                </button>
+            <!-- Comment Form First -->
+            {% if user %}
+            <div class="comments-form-area">
+                <h4><i class="fas fa-plus"></i> Ajouter un commentaire</h4>
+                <form onsubmit="addComment(event, {{ article.id }})" class="comment-form">
+                    <div class="form-group">
+                        <textarea name="content" placeholder="Ajoutez un commentaire..." required
+                            class="comment-input"></textarea>
+                        <button type="submit" class="btn btn-primary comment-submit">
+                            <i class="fas fa-paper-plane"></i> Publier
+                        </button>
+                    </div>
+                </form>
             </div>
             {% endif %}
-        </footer>
-    </div>
-</article>
 
-<section style="
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-">
-    <h3 style="margin-bottom:1rem;">Commentaires ({{ comments|length }})</h3>
+            <!-- Comments List -->
+            <div class="comments-main">
+                <div id="comments-list" class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <strong class="comment-author">{{ comment.author_name }}</strong>
+                            <small class="comment-date">{{ comment.created_at|format_date }}</small>
+                        </div>
+                        <p class="comment-content">{{ comment.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
 
-    {% if user %}
-    <form onsubmit="addComment(event, {{ article.id }})" style="margin-bottom:1.5rem;">
-        <div style="display:flex; gap:.5rem;">
-            <textarea name="content" placeholder="Ajoutez un commentaire..." required style="
-                          flex:1;
-                          padding:.6rem;
-                          border:1px solid #ccc;
-                          border-radius:4px;
-                          resize:vertical;
-                          min-height:80px;
-                      "></textarea>
-            <button type="submit" style="
-                background: #007bff;
-                color: #fff;
-                border: none;
-                border-radius: 4px;
-                padding: .6rem 1rem;
-                cursor: pointer;
-            ">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
-    </form>
-    {% endif %}
-
-    <div id="comments-list">
-        {% for comment in comments %}
-        <div style="border-bottom:1px solid #eee; padding:1rem 0;">
-            <div style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: .5rem;
-            ">
-                <strong>{{ comment.author_name }}</strong>
-                <small style="color:#666;">{{ comment.created_at|format_date }}</small>
+                {% if comments|length == 0 %}
+                <div class="empty-comments">
+                    <div class="empty-icon">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <p>Aucun commentaire pour le moment.</p>
+                </div>
+                {% endif %}
             </div>
-            <p style="line-height: 1.5;">{{ comment.content }}</p>
         </div>
-        {% endfor %}
-    </div>
+    </section>
+</div>
 
-    {% if comments|length == 0 %}
-    <p style="text-align:center; color:#666;">Aucun commentaire pour le moment.</p>
-    {% endif %}
-</section>
+<style>
+    /* Reset and base styles */
+    * {
+        box-sizing: border-box;
+    }
 
-<!-- Ajoutez ici un éventuel CSS/JS spécifique à cette page -->
+    .article-detail-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        animation: fadeIn 0.6s ease-out;
+        /* UNIFIED WHITE BACKGROUND FOR ENTIRE CONTAINER */
+        background: white;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Top Section: Hero with Title and Image */
+    .article-hero-section {
+        width: 100%;
+        max-width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 400px;
+        /* UNIFIED WHITE BACKGROUND - NO GRADIENT */
+        background: white;
+        border-bottom: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .hero-title-section {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        /* UNIFIED WHITE BACKGROUND - REMOVED GRADIENT */
+        background: white;
+        min-width: 0;
+    }
+
+    .hero-image-section {
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* UNIFIED WHITE BACKGROUND */
+        background: white;
+        min-width: 0;
+    }
+
+    .article-title {
+        font-size: clamp(1.5rem, 3vw, 2.5rem);
+        font-weight: 800;
+        line-height: 1.2;
+        color: black;
+        margin: 0 0 1.5rem 0;
+        background-clip: text;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+    }
+
+    .article-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: auto;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        min-width: 0;
+    }
+
+    .meta-item span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .meta-item i {
+        color: var(--primary-color);
+        opacity: 0.8;
+        flex-shrink: 0;
+    }
+
+    .article-hero {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        height: 300px;
+        overflow: hidden;
+        border-radius: var(--border-radius-lg);
+        /* REMOVED SHADOW */
+    }
+
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom,
+                transparent 0%,
+                rgba(0, 0, 0, 0.1) 50%,
+                rgba(0, 0, 0, 0.3) 100%);
+    }
+
+    /* Middle Section: Content and Actions */
+    .article-main-section {
+        width: 100%;
+        max-width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 0;
+        min-height: 400px;
+        /* UNIFIED WHITE BACKGROUND */
+        background: white;
+        overflow: hidden;
+    }
+
+    .article-content-area {
+        padding: 2rem;
+        border-right: 1px solid var(--border-color);
+        overflow-y: auto;
+        min-width: 0;
+        /* UNIFIED WHITE BACKGROUND */
+        background: white;
+    }
+
+    .article-actions-area {
+        /* UNIFIED WHITE BACKGROUND - REMOVED GRAY */
+        background: white;
+        position: relative;
+        min-width: 0;
+    }
+
+    .sticky-sidebar {
+        position: sticky;
+        top: 2rem;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        /* UNIFIED WHITE BACKGROUND */
+        background: white;
+    }
+
+    .article-description {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .article-description h3,
+    .article-content h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .article-description p {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin: 0;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-left: 4px solid var(--primary-color);
+        border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .article-body {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--text-color);
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+
+    .sidebar-section {
+        /* UNIFIED WHITE BACKGROUND - REMOVED INDIVIDUAL BACKGROUNDS AND SHADOWS */
+        background: transparent;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        /* REMOVED SHADOW */
+        border: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+    }
+
+    .sidebar-section h4 {
+        margin: 0 0 1rem 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .sidebar-section h4 i {
+        color: var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .article-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: #f8f9fa;
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        text-align: center;
+        min-width: 0;
+    }
+
+    .action-btn span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .action-btn:not(.disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
+    }
+
+    .action-btn.disabled {
+        cursor: default;
+        opacity: 0.7;
+    }
+
+    .like-btn.active {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        color: white;
+        border-color: #ff6b6b;
+    }
+
+    .save-btn.active {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+        border-color: #f39c12;
+    }
+
+    .author-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        text-align: center;
+        min-width: 0;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-dark), #004085);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333, #a71e2a);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Bottom Section: Comments */
+    .comments-section {
+        width: 100%;
+        max-width: 100%;
+        /* UNIFIED WHITE BACKGROUND */
+        background: white;
+        border-top: 1px solid var(--border-color);
+        padding: 2rem 0;
+        overflow: hidden;
+    }
+
+    .comments-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .comments-header {
+        margin-bottom: 0;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .comments-header h3 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .comments-header i {
+        color: var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .comments-form-area {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        order: 1;
+    }
+
+    .comments-main {
+        order: 2;
+    }
+
+    .comments-form-area h4 {
+        margin: 0 0 1rem 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .comments-form-area h4 i {
+        color: var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .comment-form {
+        margin-bottom: 1rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .comment-input {
+        padding: 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        line-height: 1.5;
+        resize: vertical;
+        min-height: 100px;
+        transition: var(--transition);
+        font-family: inherit;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .comment-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .comment-submit {
+        align-self: flex-end;
+        width: fit-content;
+        padding: 1rem 1.5rem;
+    }
+
+    .comments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .comment-item {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: var(--border-radius);
+        border-left: 4px solid var(--primary-color);
+        transition: var(--transition);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .comment-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .comment-author {
+        color: var(--text-color);
+        font-weight: 600;
+        font-size: 1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
+
+    .comment-date {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .comment-content {
+        margin: 0;
+        line-height: 1.6;
+        color: var(--text-color);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .empty-comments {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-muted);
+    }
+
+    .empty-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .empty-icon i {
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    /* Loading animation */
+    .btn.loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .btn.loading::after {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 1200px) {
+        .article-main-section {
+            grid-template-columns: 1fr 300px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .article-hero-section {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-image-section {
+            order: -1;
+        }
+
+        .article-main-section {
+            grid-template-columns: 1fr;
+        }
+
+        .article-actions-area {
+            background: white;
+        }
+
+        .sticky-sidebar {
+            position: static;
+            max-height: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+
+        .hero-title-section,
+        .hero-image-section,
+        .article-content-area,
+        .sticky-sidebar {
+            padding: 1.5rem;
+        }
+
+        .comments-container {
+            padding: 0 1.5rem;
+        }
+
+        .article-meta {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comment-submit {
+            align-self: stretch;
+            width: 100%;
+        }
+
+        .comment-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .hero-title-section,
+        .hero-image-section,
+        .article-content-area,
+        .sticky-sidebar {
+            padding: 1rem;
+        }
+
+        .comments-container {
+            padding: 0 1rem;
+        }
+
+        .article-title {
+            font-size: 1.3rem;
+        }
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *:before,
+        *:after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0 !important;
+        }
+    }
+
+    /* Focus styles for accessibility */
+    .action-btn:focus,
+    .btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+</style>
+
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Enhanced button interactions
+        document.querySelectorAll('.action-btn:not(.disabled)').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.transform = 'translateY(-2px)';
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Smooth scroll for comments
+        const commentsSection = document.querySelector('.comments-section');
+        if (commentsSection) {
+            commentsSection.addEventListener('click', (e) => {
+                if (e.target.matches('.comment-input')) {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+    });
+
     function toggleLike(articleId) {
+        const btn = document.getElementById('like-btn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
         fetch('/like-article/' + articleId, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    const btn = document.getElementById('like-btn');
                     document.getElementById('likes-count').textContent = data.likes_count;
-                    btn.style.color = data.liked ? '#e74c3c' : '#666';
+                    btn.classList.toggle('active', data.liked);
                 } else {
                     alert('Erreur: ' + data.error);
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur de connexion');
+            })
+            .finally(() => {
+                btn.classList.remove('loading');
+                btn.disabled = false;
             });
     }
 
     function toggleSave(articleId) {
+        const btn = document.getElementById('save-btn');
+        const txt = document.getElementById('save-text');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
         fetch('/save-article/' + articleId, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    const btn = document.getElementById('save-btn');
-                    const txt = document.getElementById('save-text');
-                    btn.style.color = data.saved ? '#f39c12' : '#666';
+                    btn.classList.toggle('active', data.saved);
                     txt.textContent = data.saved ? 'Sauvegardé' : 'Sauvegarder';
                 } else {
                     alert('Erreur: ' + data.error);
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur de connexion');
+            })
+            .finally(() => {
+                btn.classList.remove('loading');
+                btn.disabled = false;
             });
     }
 
     function deleteArticle(articleId) {
-        if (!confirm('Êtes-vous sûr de Supprimer cet Article ?')) return;
+        if (!confirm('Êtes-vous sûr de supprimer cet article ?')) return;
+
         fetch('/delete-article/' + articleId, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
-                if (data.success) window.location.href = '/';
-                else alert('Erreur: ' + data.error);
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur de connexion');
             });
     }
 
@@ -201,7 +911,15 @@
         event.preventDefault();
         const form = event.target;
         const content = form.content.value.trim();
-        if (!content) return alert('Veuillez saisir un commentaire');
+
+        if (!content) {
+            alert('Veuillez saisir un commentaire');
+            return;
+        }
+
+        const submitBtn = form.querySelector('.comment-submit');
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
 
         const body = new URLSearchParams({ content });
         fetch('/comment-article/' + articleId, {
@@ -217,7 +935,14 @@
                     alert(data.error);
                 }
             })
-            .catch(() => alert('Erreur de connexion'));
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur de connexion');
+            })
+            .finally(() => {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
     }
 </script>
 {% endblock %}
