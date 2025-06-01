@@ -3,11 +3,14 @@
         <a href="/" class="logo">
             <i class="fas fa-blog"></i>BlogPlatform
         </a>
+
         <div class="nav-menu" id="navMenu">
             <a href="/" class="nav-link">
                 <i class="fas fa-home"></i>Accueil
             </a>
-            <!-- Si l'utilisateur est connecté -->
+
+            {% if user %}
+            <!-- only show “Créer” & dropdown when user is logged in -->
             <a href="/create-article" class="nav-link">
                 <i class="fas fa-plus"></i>Créer
             </a>
@@ -32,7 +35,17 @@
                     </a>
                 </div>
             </div>
+            {% else %}
+            <!-- if no user, show login/register instead -->
+            <a href="/login" class="nav-link">
+                <i class="fas fa-sign-in-alt"></i>Connexion
+            </a>
+            <a href="/register" class="nav-link btn-primary">
+                <i class="fas fa-user-plus"></i>Inscription
+            </a>
+            {% endif %}
         </div>
+
         <div class="nav-toggle" id="navToggle">
             <span></span>
             <span></span>
@@ -40,4 +53,3 @@
         </div>
     </nav>
 </header>
-
