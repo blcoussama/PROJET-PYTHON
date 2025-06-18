@@ -74,24 +74,26 @@
 }
 
 .nav-link.btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: #fff;
     padding: clamp(0.5rem, 1vw, 0.6rem) 1.2rem;
     border-radius: 25px;
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
     font-weight: 600;
     max-width: 150px;
+    background: linear-gradient(135deg, #6478d2 0%, #5e3c7c 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(119, 0, 255, 0.3);
+    transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
 }
 
 .nav-link.btn-primary:hover {
-    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    background: linear-gradient(135deg, rgb(125, 146, 238) 0%, #5f407b 100%);
     transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(128, 0, 255, 0.4);
 }
 
 .nav-link.btn-primary:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(123, 0, 255, 0.3);
 }
 
 .nav-dropdown {

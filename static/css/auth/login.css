@@ -216,16 +216,17 @@ body::before {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
+    background: linear-gradient(135deg, #6478d2 0%, #5e3c7c 100%);
+    color: #fff;
     width: 100%;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 7px rgba(119, 0, 255, 0.3);
+    transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-dark), #004085);
+    background: linear-gradient(135deg, rgb(125, 146, 238) 0%, #5f407b 100%);
     transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 6px 15px rgba(128, 0, 255, 0.4);
 }
 
 .btn-primary:active {
@@ -274,14 +275,14 @@ body::before {
 }
 
 .auth-links a {
-    color: var(--primary-color);
+    color: #9d70c4;
     text-decoration: none;
     font-weight: 500;
     transition: var(--transition);
 }
 
 .auth-links a:hover {
-    color: var(--primary-dark);
+    color: rgb(186, 143, 223);
     text-decoration: underline;
 }
 
